@@ -1,0 +1,96 @@
+# matsav-tov.service - Systemd сервис для автозапуска
+# Сохранить в: /etc/systemd/system/matsav-tov.service
+
+[Unit]
+Description=Matsav Tov Telegram Bot (Optimized Production)
+Documentation=https://github.com/your-repo/matsav-tov-bot
+After=network-online.target
+Wants=network-online.target
+Requires=network.target
+
+[Service]
+Type=simple
+User=matsav
+Group=matsav
+WorkingDirectory=/home/matsav/matsav-tov-bot
+
+# Python и виртуальное окружение  
+Environment=PATH=/home/matsav/matsav-tov-bot/venv/bin:/usr/local/bin:/usr/bin:/bin
+ExecStart=/home/matsav/matsav-tov-bot/venv/bin/python main_optimized.py
+
+# Переменные окружения для продакшена
+Environment=PYTHONPATH=/home/matsav/matsav-tov-bot
+Environment=PYTHONUNBUFFERED=1
+Environment=DEBUG=False
+Environment=LOG_LEVEL=INFO
+
+# ВАЖНО: Установите свои переменные
+Environment=BOT_TOKEN=ваш_реальный_токен_здесь
+Environment=ADMIN_ID=ваш_telegram_id_здесь
+Environment=BATCH_SIZE=50
+Environment=BATCH_DELAY=0.5
+
+# Автоматический перезапуск
+Restart=always
+RestartSec=10
+StartLimitInterval=60
+StartLimitBurst=3
+
+# Ограничения ресурсов
+MemoryMax=2G
+CPUQuota=200%
+TasksMax=1000
+
+# Таймауты
+TimeoutStartSec=60
+TimeoutStopSec=30
+KillMode=mixed
+KillSignal=SIGTERM
+
+# Логирование
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=matsav-tov
+
+# Безопасность (дополнительная изоляция)
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/home/matsav/matsav-tov-bot/data /home/matsav/matsav-tov-bot/logs /home/matsav/matsav-tov-bot/backups
+PrivateTmp=true
+ProtectControlGroups=true
+ProtectKernelModules=true
+ProtectKernelTunables=true
+
+[Install]
+WantedBy=multi-user.target
+
+# =============================================================================
+# ИНСТРУКЦИЯ ПО УСТАНОВКЕ:
+# =============================================================================
+#
+# 1. Скопируйте этот файл на сервер:
+#    sudo nano /etc/systemd/system/matsav-tov.service
+#
+# 2. Замените пути и переменные на свои:
+#    - Путь к проекту: /home/matsav/matsav-tov-bot
+#    - BOT_TOKEN на ваш токен
+#    - ADMIN_ID на ваш ID
+#    - User и Group на вашего пользователя
+#
+# 3. Перезагрузите systemd:
+#    sudo systemctl daemon-reload
+#
+# 4. Включите автозапуск:
+#    sudo systemctl enable matsav-tov
+#
+# 5. Запустите сервис:
+#    sudo systemctl start matsav-tov
+#
+# 6. Проверьте статус:
+#    sudo systemctl status matsav-tov
+#
+# 7. Просмотр логов:
+#    sudo journalctl -u matsav-tov -f
+#
+# =============================================================================
